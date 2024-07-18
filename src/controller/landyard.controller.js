@@ -106,6 +106,9 @@ const createAccessToken = asyncHandler(async (req, res) => {
         },
       }
     );
+
+    // Creating the opportunity ids
+
     let salesForceData;
 
     if (product_flag === "lanyardField") {
