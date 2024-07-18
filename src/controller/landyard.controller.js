@@ -75,82 +75,31 @@ const createAccessToken = asyncHandler(async (req, res) => {
     if (!accessToken) {
       throw new ApiError(400, "Failed to generate access token");
     }
+    const accountUrl = `${instance_url}/services/data/v58.0/sobjects/Account`;
 
-    const opportunityUrl = `${instance_url}/services/data/v58.0/sobjects/Opportunity`;
-
-    const opportunityDataFields = {
-      name: name,
-      email: email,
-      website: "https://thelanyardauthority.myshopify.com/",
-      phone: phone,
-      city: city,
-      state: state,
-      zip: zip,
+    const accountData = {
+      Name: name,
+    //   PersonEmail: email,
+    //   Source_Website__c: "https://thelanyardauthority.myshopify.com/",
+    //   PersonAssistantPhone: phone,
+    //   city: city,
+    //   state: state,
+    //   zip: zip,
     };
+    
+    // creates the account id
+    const { data:accountObj } = await axios.post(accountUrl, accountData,{
+        headers:{
+            "Content-Type":"application/json",
+            "Authorization":`Bearer ${accessToken}`,
+        }
+    });
 
-    const { data: opportunityData } = await axios.post(
-      opportunityUrl,
-      {
-        Name: "New Opp 3",
-        AccountId: "001F900001lTWRJIA4",
-        CloseDate: "2024-08-08",
-        StageName: "Qualify",
-        Amount: 123,
-        Description: "Color: blue, size: 23",
-        ForecastCategoryName: "Omitted",
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: ` Bearer ${accessToken}`,
-        },
-      }
-    );
-
-    // Creating the opportunity ids
-
-    let salesForceData;
-
-    if (product_flag === "lanyardField") {
-      salesForceData = {
-        Opportunity__c: opportunityData?.id,
-        Quantity__c: quantity,
-        Customer_Received_Comments__c: comment,
-        Type__c: product_title,
-        Size__c: size,
-        Imprint_Text__c: imprint_text,
-        Strap_Colors__c: color,
-        Color__c: color,
-        Badge_Holder__c: badge1,
-        Badge_Reel_Type__c: badge2,
-        Lanyard_Attachments: lanyard_attachments,
-      };
-    } else if (product_flag === "badgeReelField") {
-      salesForceData = {
-        Opportunity__c: opportunityData?.id,
-        Quantity__c: quantity,
-        Customer_Received_Comments__c: comment,
-        Quantity__c: quantity,
-        Badge_Reel_Type__c: badge2,
-        Badge_Holder__c: badge1,
-      };
-    } else if (product_flag === "tagIdField") {
-      salesForceData = {
-        Opportunity__c: opportunityData?.id,
-        Quantity__c: quantity,
-        Customer_Received_Comments__c: comment,
-        Item_Color__c: color,
-        Size__c: size,
-        Imprint_Text__c: imprint_text,
-        Add_Dome_To_Label__c: null,
-        Badge_Holder__c: badge1,
-      };
-    }
-    console.log(salesForceData);
     return res
       .status(200)
-      .json(new ApiResponse(200, opportunityData, "Access token generate"));
+      .json(new ApiResponse(200, accountObj, "Access token generate"));
   } catch (error) {
+    console.log(error,"error")
     throw new ApiError(500, error);
   }
 });
