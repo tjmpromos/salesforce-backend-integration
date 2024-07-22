@@ -10,7 +10,7 @@ app.use(urlencoded({ extended: true, limit: "20mb" }));
 
 app.use("/api/v1/landyard", router);
 
-app.get("api/v1/testing", (req, res) => {
+app.get("/", (req, res) => {
   res.status(200).json({ success: true, message: "Testing successful" });
 });
 
