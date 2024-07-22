@@ -10,6 +10,10 @@ app.use(urlencoded({ extended: true, limit: "20mb" }));
 
 app.use("/api/v1/landyard", router);
 
+app.get("api/v1/testing", (req, res) => {
+  res.status(200).json({ success: true, message: "Testing successful" });
+});
+
 app.listen(PORT, () => {
   console.log("Server is running on port 5000");
 });
