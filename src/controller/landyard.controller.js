@@ -20,10 +20,27 @@ const createAccessToken = asyncHandler(async (req, res) => {
     color,
     product_title,
     size,
-    badge1,
-    badge2,
-    lanyard_attachments,
+    badgeHolderType,
+    badgeHolderCurrency,
+    customBadgeHolderCurrency,
+    landyardAttachmentQuantity,
     product_flag,
+
+    // Landyard attachments
+    bullDogClipCurrency,
+    keyRingCurrency,
+    thumbTriggerCurrency,
+    swivelJHooksCurrency,
+    cellPhoneLoopsCurrency,
+    carabinarHooksCurrency,
+    plasticJHooksCurrency,
+    ovalHooksCurrency,
+    discounnectBucklesCurrency,
+    safetyBreakAwayCurrency,
+    lengthAdjusterCurrency,
+    thumbHooksCurrency,
+    noSwivelJHooksCurrency,
+    plasticClampCurrency,
   } = req.body;
 
   const body = req.body;
@@ -119,16 +136,51 @@ const createAccessToken = asyncHandler(async (req, res) => {
     incomingData = {
       Opportunity__c: opportunityId,
       RecordTypeId: "0121N000001hNZ7QAM",
-      Quantity__c: quantity,
-      Customer_Received_Comments__c: comment,
       Type__c: product_title,
       Size__c: size,
-      Imprint_Text__c: imprint_text,
+      Quantity__c: quantity,
       Strap_Colors__c: color,
       Color__c: color,
-      // Badge_Holder__c: badge1,
-      Badge_Reel_Type__c: badge2,
-      // Lanyard_Attachments: lanyard_attachments,
+      Customer_Received_Comments__c: comment,
+      Imprint_Text__c: imprint_text,
+
+      // quantitys
+      Bulldog_Clips__c: landyardAttachmentQuantity,
+      Key_Rings__c: landyardAttachmentQuantity,
+      Thumb_Triggers__c: landyardAttachmentQuantity,
+      Swivel_J_Hooks__c: landyardAttachmentQuantity,
+      Cell_Phone_Loops__c: landyardAttachmentQuantity,
+      Carabiner_Hooks__c: landyardAttachmentQuantity,
+      Plastic_J_Hooks__c: landyardAttachmentQuantity,
+      Oval_Hooks__c: landyardAttachmentQuantity,
+      Disconnect_Buckles__c: landyardAttachmentQuantity,
+      Safety_Breakaways__c: landyardAttachmentQuantity,
+      Length_Adjusters__c: landyardAttachmentQuantity,
+      Thumb_Hooks__c: landyardAttachmentQuantity,
+      No_Swivel_J_Hooks__c: landyardAttachmentQuantity,
+      Plastic_Clamp__c: landyardAttachmentQuantity,
+
+      Bulldog_Clip__c: bullDogClipCurrency,
+      Key_Ring__c: keyRingCurrency,
+      Thumb_Trigger__c: thumbTriggerCurrency,
+      Swivel_J_Hook__c: swivelJHooksCurrency,
+      Cell_Phone_Loop__c: cellPhoneLoopsCurrency,
+      Carabiner_Hook__c: carabinarHooksCurrency,
+      Plastic_J_Hook__c: plasticJHooksCurrency,
+      Oval_Hook__c: ovalHooksCurrency,
+      Disconnect_Buckle__c: discounnectBucklesCurrency,
+      Safety_Breakaway__c: safetyBreakAwayCurrency,
+      Length_Adjuster__c: lengthAdjusterCurrency,
+      Thumb_Hook__c: thumbHooksCurrency,
+      No_Swivel_J_Hook__c: noSwivelJHooksCurrency,
+      Plastic_Clamps__c: plasticClampCurrency,
+
+      Badge_Holder__c: badgeHolderType,
+      Badge_Holder_Costs__c: badgeHolderCurrency,
+      Custom_Badge_Holder_Costs__c: customBadgeHolderCurrency,
+
+      Badge_Reel_Type__c: badgeReelType,
+      Badge_Reel_Costs__c: badgeReelCurrency,
     };
   } else if (product_flag === "badgeReelField") {
     incomingData = {
@@ -136,8 +188,8 @@ const createAccessToken = asyncHandler(async (req, res) => {
       RecordTypeId: "0123m000001g0YHAAY",
       Quantity__c: quantity,
       Customer_Received_Comments__c: comment,
-      Badge_Reel_Type__c: badge2,
-      Badge_Holder__c: badge1,
+      // Badge_Reel_Type__c: badgeReelType,
+      Badge_Holder__c: badgeHolderType,
     };
   } else if (product_flag === "tagIdField") {
     incomingData = {
