@@ -25,7 +25,6 @@ const createAccessToken = asyncHandler(async (req, res) => {
     badgeReelCurrency,
     badgeHolderCurrency,
     customBadgeHolderCurrency,
-    landyardAttachmentQuantity,
     product_flag,
 
     // Landyard attachments
@@ -135,7 +134,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
 
   let incomingData;
 
-  if (product_flag === "lanyard_field") {
+  if (product_flag === "lanyardField") {
     incomingData = {
       Opportunity__c: opportunityId,
       RecordTypeId: "0121N000001hNZ7QAM",
@@ -194,10 +193,10 @@ const createAccessToken = asyncHandler(async (req, res) => {
       Quantity__c: quantity,
       RecordTypeId: "012R3000000p8TNIAY",
       Size__c: size,
-      Customer_Received_Comments__c: comment,
-      Badge_Holder__c: badgeHolderType,
-      Imprint_Text__c: imprint_text,
       Item_Color__c: color,
+      Imprint_Text__c: imprint_text || "Imprint text",
+      Customer_Received_Comments__c: comment,
+      // Badge_Holder__c: badgeHolderType,
       Add_Dome_To_Label__c: false,
     };
   }
