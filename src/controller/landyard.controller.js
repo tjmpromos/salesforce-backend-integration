@@ -132,68 +132,73 @@ const createAccessToken = asyncHandler(async (req, res) => {
   if (!opportunityId)
     throw new ApiError(400, "Failed to create opportunity id");
 
-  const imageUploadUrl = `${instance_url}/services/data/v51.0/sobjects/ContentVersion`;
-  const filePath = req.file.path;
-  const fileOriginalName = req.file.originalname;
-  const fileData = fs.readFileSync(filePath);
-  const base64FileData = Buffer.from(fileData).toString("base64");
+  let imageLinkId;
 
-  const contentVersion = {
-    Title: fileOriginalName,
-    PathOnClient: fileOriginalName,
-    VersionData: base64FileData,
-  };
+  if (req.file !== undefined) {
+    const imageUploadUrl = `${instance_url}/services/data/v51.0/sobjects/ContentVersion`;
+    const filePath = req.file?.path;
+    const fileOriginalName = req.file?.originalname;
+    const fileData = fs.readFileSync(filePath);
+    const base64FileData = Buffer.from(fileData).toString("base64");
 
-  const imageData = await fetch(imageUploadUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify(contentVersion),
-  });
+    const contentVersion = {
+      Title: fileOriginalName,
+      PathOnClient: fileOriginalName,
+      VersionData: base64FileData,
+    };
 
-  const imageResponse = await imageData.json();
-
-  const contentVersionId = imageResponse?.id;
-
-  const contentVersionRecord = await fetch(
-    `${instance_url}/services/data/v51.0/sobjects/ContentVersion/${contentVersionId}`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  ).then((res) => res.json());
-
-  const contentDocumentId = contentVersionRecord.ContentDocumentId;
-
-  const contentDocumentLink = {
-    ContentDocumentId: contentDocumentId,
-    LinkedEntityId: opportunityId,
-    ShareType: "V",
-    Visibility: "AllUsers",
-  };
-
-  const linkResponse = await fetch(
-    `${instance_url}/services/data/v51.0/sobjects/ContentDocumentLink`,
-    {
+    const imageData = await fetch(imageUploadUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
-      body: JSON.stringify(contentDocumentLink),
-    }
-  ).then((res) => res.json());
+      body: JSON.stringify(contentVersion),
+    });
 
-  const imageLinkId = linkResponse?.id;
+    const imageResponse = await imageData.json();
+
+    const contentVersionId = imageResponse?.id;
+
+    const contentVersionRecord = await fetch(
+      `${instance_url}/services/data/v51.0/sobjects/ContentVersion/${contentVersionId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    ).then((res) => res.json());
+
+    const contentDocumentId = contentVersionRecord.ContentDocumentId;
+
+    const contentDocumentLink = {
+      ContentDocumentId: contentDocumentId,
+      LinkedEntityId: opportunityId,
+      ShareType: "V",
+      Visibility: "AllUsers",
+    };
+
+    const linkResponse = await fetch(
+      `${instance_url}/services/data/v51.0/sobjects/ContentDocumentLink`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(contentDocumentLink),
+      }
+    ).then((res) => res.json());
+
+    imageLinkId = linkResponse?.id;
+  }
 
   let incomingData;
 
   if (product_flag === "lanyardField") {
     incomingData = {
+      // Custom_Field_Image__c: imageLinkId,
       Opportunity__c: opportunityId,
       RecordTypeId: "0121N000001hNZ7QAM",
       Type__c: product_title,
