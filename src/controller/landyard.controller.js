@@ -2,7 +2,7 @@ import axios from "axios";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-
+import fs from "fs";
 const createAccessToken = asyncHandler(async (req, res) => {
   const {
     // General field
@@ -16,7 +16,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
     // Products field
     quantity,
     comment,
-    imprint_text,
+    imprintText,
     color,
     product_title,
     size,
@@ -132,6 +132,64 @@ const createAccessToken = asyncHandler(async (req, res) => {
   if (!opportunityId)
     throw new ApiError(400, "Failed to create opportunity id");
 
+  const imageUploadUrl = `${instance_url}/services/data/v51.0/sobjects/ContentVersion`;
+  const filePath = req.file.path;
+  const fileOriginalName = req.file.originalname;
+  const fileData = fs.readFileSync(filePath);
+  const base64FileData = Buffer.from(fileData).toString("base64");
+
+  const contentVersion = {
+    Title: fileOriginalName,
+    PathOnClient: fileOriginalName,
+    VersionData: base64FileData,
+  };
+
+  const imageData = await fetch(imageUploadUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(contentVersion),
+  });
+
+  const imageResponse = await imageData.json();
+
+  const contentVersionId = imageResponse?.id;
+
+  const contentVersionRecord = await fetch(
+    `${instance_url}/services/data/v51.0/sobjects/ContentVersion/${contentVersionId}`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  ).then((res) => res.json());
+
+  const contentDocumentId = contentVersionRecord.ContentDocumentId;
+
+  const contentDocumentLink = {
+    ContentDocumentId: contentDocumentId,
+    LinkedEntityId: opportunityId,
+    ShareType: "V",
+    Visibility: "AllUsers",
+  };
+
+  const linkResponse = await fetch(
+    `${instance_url}/services/data/v51.0/sobjects/ContentDocumentLink`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(contentDocumentLink),
+    }
+  ).then((res) => res.json());
+
+  const imageLinkId = linkResponse?.id;
+
   let incomingData;
 
   if (product_flag === "lanyardField") {
@@ -140,11 +198,11 @@ const createAccessToken = asyncHandler(async (req, res) => {
       RecordTypeId: "0121N000001hNZ7QAM",
       Type__c: product_title,
       Size__c: size,
-      Quantity__c: quantity,
+      Quantity__c: quantity < 100 ? 100 : quantity,
       Strap_Colors__c: color,
       Color__c: color,
       Customer_Received_Comments__c: comment,
-      Imprint_Text__c: imprint_text,
+      Imprint_Text__c: imprintText,
 
       // quantitys
       Bulldog_Clips__c: bullDogClipQuantity ? quantity : 0,
@@ -173,16 +231,16 @@ const createAccessToken = asyncHandler(async (req, res) => {
     incomingData = {
       Opportunity__c: opportunityId,
       RecordTypeId: "0123m000001g0YHAAY",
-      Quantity__c: quantity,
+      Quantity__c: quantity < 100 ? 100 : quantity,
       Customer_Received_Comments__c: comment,
       Badge_Reel_Type__c: size,
-      // Imprint_Text__c: imprint_text,
+      // Imprint_Text__c: imprintText,
     };
   } else if (product_flag === "badgeHolder") {
     incomingData = {
       Opportunity__c: opportunityId,
       RecordTypeId: "012R3000000rMiLIAU",
-      Quantity__c: quantity,
+      Quantity__c: quantity < 100 ? 100 : quantity,
       type__c: size,
       Customer_Received_Comments__c: comment,
       Custom_Option_s__c: size === "Custom" ? customBadgeHolder : null,
@@ -190,11 +248,11 @@ const createAccessToken = asyncHandler(async (req, res) => {
   } else if (product_flag === "tagIdField") {
     incomingData = {
       Opportunity__c: opportunityId,
-      Quantity__c: quantity,
+      Quantity__c: quantity < 150 ? 150 : quantity,
       RecordTypeId: "012R3000000p8TNIAY",
       Size__c: size,
       Item_Color__c: color,
-      Imprint_Text__c: imprint_text || "Imprint text",
+      Imprint_Text__c: imprintText || "Imprint text",
       Customer_Received_Comments__c: comment,
       // Badge_Holder__c: badgeHolderType,
       Add_Dome_To_Label__c: false,
