@@ -54,13 +54,11 @@ const createAccessToken = asyncHandler(async (req, res) => {
     const url = "https://login.salesforce.com/services/oauth2/token";
 
     const data = {
-      username: "support@cartmade.com",
-      password: "Cartmade2019#DdRjVkrT5yQOniNyOJq4xyWM",
+      username: process.env.USERNAME,
+      password: process.env.PASSWORD,
       grant_type: "password",
-      client_id:
-        "3MVG9mclR62wycM1Eli6OTTyBzrk4G_20zKJAqMoHzImlSsuMmuslzIb9_WROc17x7TWUHWXSOJw0bz97CU1m",
-      client_secret:
-        "451B4A40ECE20B40CA245DDD2F6D14687121EBF7C24107C88E5376ABB798E839",
+      client_id: process.env.CLIENT_ID,
+      client_secret: process.env.CLIENT_SECRET,
     };
 
     const config = {
