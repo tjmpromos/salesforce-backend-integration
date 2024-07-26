@@ -46,9 +46,11 @@ const createAccessToken = asyncHandler(async (req, res) => {
 
       customBadgeHolder,
     } = req.body;
-
-    const body = req.body;
-    if (!body) throw new ApiError(404, "Data not found");
+    console.log("Length of name");
+    console.log(name.trim().length === 0);
+    if (name.trim().length === 0 || email.trim().length === 0) {
+      throw new ApiError(404, "Name and email field is required");
+    }
     const url = "https://login.salesforce.com/services/oauth2/token";
 
     const data = {
@@ -206,7 +208,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
         Quantity__c: quantity < 100 ? 100 : quantity,
         Strap_Colors__c: color,
         Color__c: color,
-        Customer_Received_notess__c: notes,
+        Customer_Received_notes__c: notes,
         Imprint_Text__c: imprintText,
 
         // quantitys
