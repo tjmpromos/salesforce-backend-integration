@@ -208,7 +208,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
         Quantity__c: quantity < 100 ? 100 : quantity,
         Strap_Colors__c: color,
         Color__c: color,
-        Customer_Received_notes__c: notes,
+        Customer_Received_Comments__c: notes,
         Imprint_Text__c: imprintText,
 
         // quantitys
