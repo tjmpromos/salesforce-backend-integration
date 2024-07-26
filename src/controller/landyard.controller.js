@@ -46,8 +46,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
 
       customBadgeHolder,
     } = req.body;
-    console.log("Length of name");
-    console.log(name.trim().length === 0);
+
     if (name.trim().length === 0 || email.trim().length === 0) {
       throw new ApiError(404, "Name and email field is required");
     }
@@ -175,7 +174,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
 
         Badge_Reel_Type__c: badgeReelType,
         Badge_Reel_Costs__c: badgeReelCurrency,
-        // View_Files__c: fileUrl,
+        Additional_Notes__c: fileUrl,
       };
     } else if (product_flag === "badgeReelField") {
       incomingData = {
@@ -215,6 +214,23 @@ const createAccessToken = asyncHandler(async (req, res) => {
       incomingData,
       _headers
     );
+
+    /*
+    const imageData = {
+      NEILON__Account__c: accountId,
+      NEILON__Opportunity__c: opportunityId,
+      S3_Link__c: fileUrl,
+      Assigned_PLI__c: productLineItemData?.id,
+      Original_File_Name__c: req.file.originalname,
+    };
+
+    const { data: mainData } = await axios.post(
+      `${instance_url}/services/data/v58.0/sobjects/NEILON__File__c`,
+      imageData,
+      _headers
+    );
+
+    */
 
     return res
       .status(200)
