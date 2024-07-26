@@ -5,4 +5,5 @@ const router = Router();
 router
   .route("/create-opportunity")
   .post(upload.single("image"), createAccessToken);
+
 export default router;

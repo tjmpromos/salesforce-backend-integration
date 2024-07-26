@@ -2,7 +2,9 @@ import express, { urlencoded } from "express";
 import cors from "cors";
 import router from "./routes/landyard.route.js";
 import { PORT } from "./config/constants.js";
+import { config } from "dotenv";
 const app = express();
+config();
 app.use(cors({ origin: "*", withCredentials: true }));
 
 app.use(express.json({ limit: "20mb" }));

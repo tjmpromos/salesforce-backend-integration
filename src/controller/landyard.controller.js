@@ -2,7 +2,7 @@ import axios from "axios";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import fs from "fs";
+import { imageUploader } from "../utils/ImageUpload.js";
 const createAccessToken = asyncHandler(async (req, res) => {
   try {
     const {
@@ -54,21 +54,19 @@ const createAccessToken = asyncHandler(async (req, res) => {
     const url = "https://login.salesforce.com/services/oauth2/token";
 
     const data = {
-      username: process.env.USERNAME,
-      password: process.env.PASSWORD,
+      username: process.env.SALESFORCE_USERNAME,
+      password: process.env.SALESFORCE_PASSWORD,
       grant_type: "password",
-      client_id: process.env.CLIENT_ID,
-      client_secret: process.env.CLIENT_SECRET,
+      client_id: process.env.SALESFORCE_CLIENT_ID,
+      client_secret: process.env.SALESFORCE_CLIENT_SECRET,
     };
 
     const config = {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        Cookie:
-          "BrowserId=w0z4pTqeEe-LtSXqHASufQ; CookieConsentPolicy=0:0; LSKey-c$CookieConsentPolicy=0:0",
       },
-      maxBodyLength: Infinity,
     };
+
     const { data: response } = await axios.post(
       url,
       new URLSearchParams(data),
@@ -79,6 +77,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
 
     const accessToken = response?.access_token;
     const instance_url = response?.instance_url;
+
     if (!accessToken) {
       throw new ApiError(400, "Failed to generate access token");
     }
@@ -132,67 +131,12 @@ const createAccessToken = asyncHandler(async (req, res) => {
     if (!opportunityId)
       throw new ApiError(400, "Failed to create opportunity id");
 
-    let imageLinkId;
+    // For the image upload
 
-    if (req.file !== undefined) {
-      const imageUploadUrl = `${instance_url}/services/data/v51.0/sobjects/ContentVersion`;
-      const filePath = req.file?.path;
-      const fileOriginalName = req.file?.originalname;
-      const fileData = fs.readFileSync(filePath);
-      const base64FileData = Buffer.from(fileData).toString("base64");
+    let fileUrl;
 
-      const contentVersion = {
-        Title: fileOriginalName,
-        PathOnClient: fileOriginalName,
-        VersionData: base64FileData,
-      };
-
-      const imageData = await fetch(imageUploadUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(contentVersion),
-      });
-
-      const imageResponse = await imageData.json();
-
-      const contentVersionId = imageResponse?.id;
-
-      const contentVersionRecord = await fetch(
-        `${instance_url}/services/data/v51.0/sobjects/ContentVersion/${contentVersionId}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      ).then((res) => res.json());
-
-      const contentDocumentId = contentVersionRecord.ContentDocumentId;
-
-      const contentDocumentLink = {
-        ContentDocumentId: contentDocumentId,
-        LinkedEntityId: opportunityId,
-        ShareType: "V",
-        Visibility: "AllUsers",
-      };
-
-      const linkResponse = await fetch(
-        `${instance_url}/services/data/v51.0/sobjects/ContentDocumentLink`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify(contentDocumentLink),
-        }
-      ).then((res) => res.json());
-
-      imageLinkId = linkResponse?.id;
-    }
+    if (req.file !== undefined)
+      fileUrl = await imageUploader(req.file.path, req.file.originalname);
 
     let incomingData;
 
@@ -231,6 +175,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
 
         Badge_Reel_Type__c: badgeReelType,
         Badge_Reel_Costs__c: badgeReelCurrency,
+        // View_Files__c: fileUrl,
       };
     } else if (product_flag === "badgeReelField") {
       incomingData = {
@@ -264,34 +209,25 @@ const createAccessToken = asyncHandler(async (req, res) => {
       };
     }
 
-    const opportunityLineItemUrl = `${instance_url}/services/data/v58.0/sobjects/Opportunity_Product__c`;
-
-    const _response = await fetch(opportunityLineItemUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`, // Assuming `_headers` contains the `Authorization` header
-      },
-      body: JSON.stringify(incomingData),
-    });
-
-    if (!_response.ok) {
-      const errorData = await _response.json();
-      throw new Error(
-        `Error: ${_response.status} - ${
-          _response.statusText
-        }. Details: ${JSON.stringify(errorData)}`
-      );
-    }
-
-    const _responseData = await _response.json();
+    // Order response
+    const { data: mainData } = await axios.post(
+      `${instance_url}/services/data/v58.0/sobjects/Opportunity_Product__c`,
+      incomingData,
+      _headers
+    );
 
     return res
       .status(200)
-      .json(new ApiResponse(200, _responseData, "Opportunity data"));
+      .json(
+        new ApiResponse(
+          200,
+          { res: mainData, imgUrl: fileUrl },
+          "Opportunity data"
+        )
+      );
   } catch (error) {
-    console.log("Erro start");
-    console.log(JSON.stringify(error));
+    console.log("Error start");
+    console.log(error);
     throw new ApiError(
       400,
       error.response?.data[0].message ||
