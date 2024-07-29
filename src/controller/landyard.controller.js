@@ -186,7 +186,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
         Opportunity__c: opportunityId,
         RecordTypeId: "0123m000001g0YHAAY",
         Quantity__c: quantity < 100 ? 100 : quantity,
-        Customer_Received_notess__c: notes,
+        Customer_Received_Comments__c: notes,
         Badge_Reel_Type__c: size,
         // Imprint_Text__c: imprintText,
       };
@@ -196,7 +196,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
         RecordTypeId: "012R3000000rMiLIAU",
         Quantity__c: quantity < 100 ? 100 : quantity,
         type__c: size,
-        Customer_Received_notess__c: notes,
+        Customer_Received_Comments__c: notes,
         Custom_Option_s__c: size === "Custom" ? customBadgeHolder : null,
       };
     } else if (product_flag === "tagIdField") {
@@ -207,7 +207,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
         Size__c: size,
         Item_Color__c: color,
         Imprint_Text__c: imprintText || "Imprint text",
-        Customer_Received_notess__c: notes,
+        Customer_Received_Comments__c: notes,
         // Badge_Holder__c: badgeHolderType,
         Add_Dome_To_Label__c: false,
       };
