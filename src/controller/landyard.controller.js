@@ -43,7 +43,6 @@ const createAccessToken = asyncHandler(async (req, res) => {
       thumbHooksQuantity,
       noSwivelJHooksQuantity,
       plasticClampQuantity,
-
       customBadgeHolder,
     } = req.body;
 
@@ -135,8 +134,13 @@ const createAccessToken = asyncHandler(async (req, res) => {
     let fileUrl;
     console.log(req.file, "Outside image");
 
-    if (req.file !== undefined) console.log(req.file, "Inside image");
-    fileUrl = await imageUploader(req.file.path, req.file.originalname);
+    if (req.file !== undefined) {
+      console.log(req.file, "Inside image");
+      fileUrl = await imageUploader(
+        req.file.path.split(" ").join("_"),
+        req.file.originalname
+      );
+    }
 
     let incomingData;
 
