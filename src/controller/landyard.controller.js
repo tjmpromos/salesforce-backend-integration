@@ -20,7 +20,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
       imprintText,
       color,
       product_title,
-      size,
+      sizeOriginal,
       badgeHolderType,
       badgeReelType,
       badgeReelCurrency,
@@ -150,7 +150,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
         Opportunity__c: opportunityId,
         RecordTypeId: "0121N000001hNZ7QAM",
         Type__c: product_title,
-        Size__c: size,
+        Size__c: sizeOriginal,
         Quantity__c: quantity < 100 ? 100 : quantity,
         Strap_Colors__c: color,
         Color__c: color,
@@ -187,7 +187,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
         RecordTypeId: "0123m000001g0YHAAY",
         Quantity__c: quantity < 100 ? 100 : quantity,
         Customer_Received_Comments__c: notes,
-        Badge_Reel_Type__c: size,
+        Badge_Reel_Type__c: sizeOriginal,
         // Imprint_Text__c: imprintText,
       };
     } else if (product_flag === "badgeHolder") {
@@ -197,14 +197,15 @@ const createAccessToken = asyncHandler(async (req, res) => {
         Quantity__c: quantity < 100 ? 100 : quantity,
         type__c: size,
         Customer_Received_Comments__c: notes,
-        Custom_Option_s__c: size === "Custom" ? customBadgeHolder : null,
+        Custom_Option_s__c:
+          sizeOriginal === "Custom" ? customBadgeHolder : null,
       };
     } else if (product_flag === "tagIdField") {
       incomingData = {
         Opportunity__c: opportunityId,
         Quantity__c: quantity < 150 ? 150 : quantity,
         RecordTypeId: "012R3000000p8TNIAY",
-        Size__c: size,
+        Size__c: sizeOriginal,
         Item_Color__c: color,
         Imprint_Text__c: imprintText || "Imprint text",
         Customer_Received_Comments__c: notes,
