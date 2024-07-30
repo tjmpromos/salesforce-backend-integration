@@ -138,7 +138,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
       console.log(req.file, "Inside image");
       fileUrl = await imageUploader(
         req.file.path.split(" ").join("_"),
-        req.file.originalname
+        req.file.originalname.split(" ").join("_")
       );
     }
 
