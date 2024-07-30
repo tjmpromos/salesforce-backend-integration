@@ -195,7 +195,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
         Opportunity__c: opportunityId,
         RecordTypeId: "012R3000000rMiLIAU",
         Quantity__c: quantity < 100 ? 100 : quantity,
-        type__c: size,
+        type__c: sizeOriginal,
         Customer_Received_Comments__c: notes,
         Custom_Option_s__c:
           sizeOriginal === "Custom" ? customBadgeHolder : null,
