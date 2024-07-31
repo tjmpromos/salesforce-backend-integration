@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { imageUploader } from "../utils/ImageUpload.js";
+import { bucketName, bucketRegion } from "../config/constants.js";
 const createAccessToken = asyncHandler(async (req, res) => {
   try {
     const {
@@ -215,35 +216,43 @@ const createAccessToken = asyncHandler(async (req, res) => {
     }
 
     // Order response
-    const { data: mainData } = await axios.post(
+    const { data: productLineItemData } = await axios.post(
       `${instance_url}/services/data/v58.0/sobjects/Opportunity_Product__c`,
       incomingData,
       _headers
     );
 
-    /*
-    const imageData = {
-      NEILON__Account__c: accountId,
-      NEILON__Opportunity__c: opportunityId,
-      S3_Link__c: fileUrl,
-      Assigned_PLI__c: productLineItemData?.id,
-      Original_File_Name__c: req.file.originalname,
-    };
+    if (req.file !== undefined) {
+      const imageData = {
+        Product_Line_Item__c: productLineItemData?.id,
+        NEILON__Opportunity__c: opportunityId,
+        Name: req.file?.filename,
+        link__c: fileUrl,
+        image_preview__c: fileUrl,
+      };
 
-    const { data: mainData } = await axios.post(
-      `${instance_url}/services/data/v58.0/sobjects/NEILON__File__c`,
-      imageData,
-      _headers
-    );
-
-    */
+      const { data: mainData } = await axios.post(
+        `${instance_url}/services/data/v58.0/sobjects/NEILON__File__c`,
+        imageData,
+        _headers
+      );
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            { res: mainData, imgUrl: fileUrl },
+            "Opportunity data"
+          )
+        );
+    }
 
     return res
       .status(200)
       .json(
         new ApiResponse(
           200,
-          { res: mainData, imgUrl: fileUrl },
+          { res: productLineItemData, imgUrl: fileUrl },
           "Opportunity data"
         )
       );
