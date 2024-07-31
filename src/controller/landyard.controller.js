@@ -204,7 +204,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
         Opportunity__c: opportunityId,
         Quantity__c: quantity < 150 ? 150 : quantity,
         RecordTypeId: "012R3000000p8TNIAY",
-        Size__c: sizeOriginal,
+        type__c: sizeOriginal,
         Item_Color__c: color,
         Imprint_Text__c: imprintText || "Imprint text",
         Customer_Received_Comments__c: notes,
