@@ -3,7 +3,6 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { imageUploader } from "../utils/ImageUpload.js";
-import { bucketName, bucketRegion } from "../config/constants.js";
 const createAccessToken = asyncHandler(async (req, res) => {
   try {
     const {
@@ -159,20 +158,20 @@ const createAccessToken = asyncHandler(async (req, res) => {
         Imprint_Text__c: imprintText,
 
         // quantitys
-        Bulldog_Clips__c: bullDogClipQuantity ? quantity : 0,
-        Key_Rings__c: keyRingQuantity ? quantity : 0,
-        Thumb_Triggers__c: thumbTriggerQuantity ? quantity : 0,
-        Swivel_J_Hooks__c: swivelJHooksQuantity ? quantity : 0,
-        Cell_Phone_Loops__c: cellPhoneLoopsQuantity ? quantity : 0,
-        Carabiner_Hooks__c: carabinarHooksQuantity ? quantity : 0,
-        Plastic_J_Hooks__c: plasticJHooksQuantity ? quantity : 0,
-        Oval_Hooks__c: ovalHooksQuantity ? quantity : 0,
-        Disconnect_Buckles__c: discounnectBucklesQuantity ? quantity : 0,
-        Safety_Breakaways__c: safetyBreakAwayQuantity ? quantity : 0,
-        Length_Adjusters__c: lengthAdjusterQuantity ? quantity : 0,
-        Thumb_Hooks__c: thumbHooksQuantity ? quantity : 0,
-        No_Swivel_J_Hooks__c: noSwivelJHooksQuantity ? quantity : 0,
-        Plastic_Clamp__c: plasticClampQuantity ? quantity : 0,
+        Bulldog_Clips__c: bullDogClipQuantity ? 1 : 0,
+        Key_Rings__c: keyRingQuantity ? 1 : 0,
+        Thumb_Triggers__c: thumbTriggerQuantity ? 1 : 0,
+        Swivel_J_Hooks__c: swivelJHooksQuantity ? 1 : 0,
+        Cell_Phone_Loops__c: cellPhoneLoopsQuantity ? 1 : 0,
+        Carabiner_Hooks__c: carabinarHooksQuantity ? 1 : 0,
+        Plastic_J_Hooks__c: plasticJHooksQuantity ? 1 : 0,
+        Oval_Hooks__c: ovalHooksQuantity ? 1 : 0,
+        Disconnect_Buckles__c: discounnectBucklesQuantity ? 1 : 0,
+        Safety_Breakaways__c: safetyBreakAwayQuantity ? 1 : 0,
+        Length_Adjusters__c: lengthAdjusterQuantity ? 1 : 0,
+        Thumb_Hooks__c: thumbHooksQuantity ? 1 : 0,
+        No_Swivel_J_Hooks__c: noSwivelJHooksQuantity ? 1 : 0,
+        Plastic_Clamp__c: plasticClampQuantity ? 1 : 0,
 
         Badge_Holder__c: badgeHolderType,
         Badge_Holder_Costs__c: badgeHolderCurrency,
@@ -180,7 +179,6 @@ const createAccessToken = asyncHandler(async (req, res) => {
 
         Badge_Reel_Type__c: badgeReelType,
         Badge_Reel_Costs__c: badgeReelCurrency,
-        Additional_Notes__c: fileUrl,
       };
     } else if (product_flag === "badgeReelField") {
       incomingData = {
