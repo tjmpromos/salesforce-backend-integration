@@ -92,6 +92,8 @@ const createAccessToken = asyncHandler(async (req, res) => {
     const accountData = {
       Name: name,
       Email_Address__c: email,
+      Phone: phone,
+      ShippingAddress: city + state,
     };
 
     // // creates the account id
