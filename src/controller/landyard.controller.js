@@ -206,7 +206,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
         RecordTypeId: "012R3000000p8TNIAY",
         Size__c: sizeOriginal,
         Item_Color__c: color,
-        Imprint_Text__c: imprintText || "Imprint text",
+        Imprint_Text__c: imprintText,
         Customer_Received_Comments__c: notes,
         // Badge_Holder__c: badgeHolderType,
         Add_Dome_To_Label__c: false,
