@@ -133,10 +133,8 @@ const createAccessToken = asyncHandler(async (req, res) => {
     // For the image upload
 
     let fileUrl;
-    console.log(req.file, "Outside image");
 
     if (req.file !== undefined) {
-      console.log(req.file, "Inside image");
       fileUrl = await imageUploader(
         req.file.path.split(" ").join("_"),
         req.file.originalname.split(" ").join("_")
@@ -201,11 +199,12 @@ const createAccessToken = asyncHandler(async (req, res) => {
           sizeOriginal === "Custom" ? customBadgeHolder : null,
       };
     } else if (product_flag === "tagIdField") {
+      console.log("Inside tag id");
       incomingData = {
         Opportunity__c: opportunityId,
         Quantity__c: quantity < 150 ? 150 : quantity,
         RecordTypeId: "012R3000000p8TNIAY",
-        type__c: sizeOriginal,
+        Size__c: sizeOriginal,
         Item_Color__c: color,
         Imprint_Text__c: imprintText || "Imprint text",
         Customer_Received_Comments__c: notes,
