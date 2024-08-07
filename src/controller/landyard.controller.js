@@ -109,10 +109,28 @@ const createAccessToken = asyncHandler(async (req, res) => {
 
     if (!accountId) throw new ApiError(400, "Failed to create a account id");
 
+    const contactUrl = `${instance_url}/services/data/v58.0/sobjects/Contact`;
+
+    const contactObject = {
+      LastName: name,
+      Email: email,
+      MobilePhone: phone,
+      AccountId: accountId,
+    };
+
+    const { data: contactData } = await axios.post(
+      contactUrl,
+      contactObject,
+      _headers
+    );
+
+    console.log(contactData, "contact data");
     const opportunityUrl = `${instance_url}/services/data/v58.0/sobjects/Opportunity`;
 
     const opportunityData = {
       AccountId: accountId,
+      Name: name,
+      Contact_Name__c: contactData?.id,
       Billing_First_Name__c: name,
       Contact_Email_Address__c: email,
       Source_Website_PL__c: "TEST JOB",
@@ -134,23 +152,6 @@ const createAccessToken = asyncHandler(async (req, res) => {
       throw new ApiError(400, "Failed to create opportunity id");
 
     // For the image upload
-
-    const contactUrl = `${instance_url}/services/data/v58.0/sobjects/Contact`;
-
-    const contactObject = {
-      LastName: name,
-      Email: email,
-      MobilePhone: phone,
-      Opportunity__c: opportunityId,
-    };
-
-    const { data: contactData } = await axios.post(
-      contactUrl,
-      contactObject,
-      _headers
-    );
-
-    console.log(contactData, "contact data");
 
     let fileUrl;
 
