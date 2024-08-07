@@ -111,8 +111,10 @@ const createAccessToken = asyncHandler(async (req, res) => {
 
     const contactUrl = `${instance_url}/services/data/v58.0/sobjects/Contact`;
 
+    const userName = name.split(" ");
     const contactObject = {
-      LastName: name,
+      FirstName: userName[0],
+      LastName: userName[1],
       Email: email,
       MobilePhone: phone,
       AccountId: accountId,
