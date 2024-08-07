@@ -113,8 +113,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
 
     const userName = name.split(" ");
     const contactObject = {
-      FirstName: userName[0],
-      LastName: userName[1],
+      LastName: name,
       Email: email,
       MobilePhone: phone,
       AccountId: accountId,
