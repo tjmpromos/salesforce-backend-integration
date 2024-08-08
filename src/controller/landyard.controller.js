@@ -297,13 +297,18 @@ const createAccessToken = asyncHandler(async (req, res) => {
   } catch (error) {
     console.log("Error start");
     console.log(error);
-    throw new ApiError(
-      400,
-      error.response?.data[0].message ||
-        error.response?.data.error ||
-        error ||
-        "Try again in few minutes"
-    );
+    return res
+      .status(400)
+      .json(
+        new ApiResponse(
+          400,
+          [],
+          error.response?.data[0].message ||
+            error.response?.data.error ||
+            error ||
+            "Try again in few minutes"
+        )
+      );
   }
 });
 
