@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { imageUploader } from "../utils/ImageUpload.js";
+
 const createAccessToken = asyncHandler(async (req, res) => {
   try {
     const {
@@ -49,6 +50,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
     if (name.trim().length === 0 || email.trim().length === 0) {
       throw new ApiError(404, "Name and email field is required");
     }
+
     const url = "https://login.salesforce.com/services/oauth2/token";
 
     const data = {
@@ -71,7 +73,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
       config
     );
 
-    if (!response) throw new ApiError(400, "Error occured");
+    if (!response) throw new ApiError(400, "Error occurred");
 
     const accessToken = response?.access_token;
     const instance_url = response?.instance_url;
@@ -87,51 +89,71 @@ const createAccessToken = asyncHandler(async (req, res) => {
       },
     };
 
-    const accountUrl = `${instance_url}/services/data/v58.0/sobjects/Account`;
+    // Check for existing Contact
+    let contactId = null;
+    let accountId = null;
 
-    const accountData = {
-      Name: name,
-      Email_Address__c: email,
-      BillingCity: city,
-      BillingState: state,
-      BillingPostalCode: zip,
-      Phone: phone,
-    };
+    try {
+      const contactUrl = `${instance_url}/services/data/v58.0/sobjects/Contact/email/${email}`;
+      const contactResponse = await axios.get(contactUrl, _headers);
 
-    // // creates the account id
-    const { data: accountObj } = await axios.post(
-      accountUrl,
-      accountData,
-      _headers
-    );
+      if (contactResponse.data && contactResponse.data.Id) {
+        contactId = contactResponse.data.Id;
+        accountId = contactResponse.data.AccountId;
+      }
+    } catch (err) {
+      console.log("No existing contact found, will create new contact");
+    }
 
-    const accountId = accountObj?.id;
+    // If no existing Contact, create new Account and Contact
+    if (!contactId) {
+      const accountUrl = `${instance_url}/services/data/v58.0/sobjects/Account`;
 
-    if (!accountId) throw new ApiError(400, "Failed to create a account id");
+      const accountData = {
+        Name: name,
+        Email_Address__c: email,
+        BillingCity: city,
+        BillingState: state,
+        BillingPostalCode: zip,
+        Phone: phone,
+      };
 
-    const contactUrl = `${instance_url}/services/data/v58.0/sobjects/Contact`;
+      const { data: accountObj } = await axios.post(
+        accountUrl,
+        accountData,
+        _headers
+      );
 
-    const userName = name.split(" ");
-    const contactObject = {
-      LastName: name,
-      Email: email,
-      MobilePhone: phone,
-      AccountId: accountId,
-    };
+      accountId = accountObj?.id;
 
-    const { data: contactData } = await axios.post(
-      contactUrl,
-      contactObject,
-      _headers
-    );
+      if (!accountId) throw new ApiError(400, "Failed to create account");
 
-    console.log(contactData, "contact data");
+      const contactUrl = `${instance_url}/services/data/v58.0/sobjects/Contact`;
+
+      const contactObject = {
+        LastName: name,
+        Email: email,
+        Phone: phone,
+        AccountId: accountId,
+      };
+
+      const { data: contactData } = await axios.post(
+        contactUrl,
+        contactObject,
+        _headers
+      );
+
+      contactId = contactData?.id;
+
+      if (!contactId) throw new ApiError(400, "Failed to create contact");
+    }
+
     const opportunityUrl = `${instance_url}/services/data/v58.0/sobjects/Opportunity`;
 
     const opportunityData = {
       AccountId: accountId,
       Name: name,
-      Contact_Name__c: contactData?.id,
+      Contact_Name__c: contactId,
       Billing_First_Name__c: name,
       Contact_Email_Address__c: email,
       Source_Website_PL__c: "TEST JOB",
@@ -149,8 +171,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
 
     const opportunityId = opportunityObj?.id;
 
-    if (!opportunityId)
-      throw new ApiError(400, "Failed to create opportunity id");
+    if (!opportunityId) throw new ApiError(400, "Failed to create opportunity");
 
     // For the image upload
 
@@ -167,7 +188,6 @@ const createAccessToken = asyncHandler(async (req, res) => {
 
     if (product_flag === "lanyardField") {
       incomingData = {
-        // Custom_Field_Image__c: imageLinkId,
         Opportunity__c: opportunityId,
         RecordTypeId: "0121N000001hNZ7QAM",
         Type__c: product_title,
@@ -208,7 +228,6 @@ const createAccessToken = asyncHandler(async (req, res) => {
         Quantity__c: quantity < 100 ? 100 : quantity,
         Customer_Received_Comments__c: notes,
         Badge_Reel_Type__c: sizeOriginal,
-        // Imprint_Text__c: imprintText,
       };
     } else if (product_flag === "badgeHolder") {
       incomingData = {
@@ -230,7 +249,6 @@ const createAccessToken = asyncHandler(async (req, res) => {
         Item_Color__c: color,
         Imprint_Text__c: imprintText,
         Customer_Received_Comments__c: notes,
-        // Badge_Holder__c: badgeHolderType,
         Add_Dome_To_Label__c: false,
       };
     }
