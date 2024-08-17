@@ -29,7 +29,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
       customBadgeHolderCurrency,
       product_flag,
 
-      // Landyard attachments
+      // Lanyard attachments
       bullDogClipQuantity,
       keyRingQuantity,
       thumbTriggerQuantity,
@@ -48,7 +48,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
     } = req.body;
 
     if (name.trim().length === 0 || email.trim().length === 0) {
-      throw new ApiError(404, "Name and email field is required");
+      throw new ApiError(404, "Name and email fields are required");
     }
 
     const url = "https://login.salesforce.com/services/oauth2/token";
@@ -89,20 +89,53 @@ const createAccessToken = asyncHandler(async (req, res) => {
       },
     };
 
-    // Check for existing Contact
     let contactId = null;
     let accountId = null;
 
-    try {
-      const contactUrl = `${instance_url}/services/data/v58.0/sobjects/Contact/email/${email}`;
-      const contactResponse = await axios.get(contactUrl, _headers);
+    const contactUrl = `${instance_url}/services/data/v58.0/sobjects/Contact/email/${email}`;
 
-      if (contactResponse.data && contactResponse.data.Id) {
-        contactId = contactResponse.data.Id;
-        accountId = contactResponse.data.AccountId;
+    const contactResponse = await fetch(contactUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    const contactData = await contactResponse.json();
+
+    if (Array.isArray(contactData)) {
+      // If the response is an array of contact URLs, use the last one
+      if (contactData.length > 1) {
+        const lastContactUrl = contactData[contactData.length - 1];
+        contactId = lastContactUrl.split("/").pop();
+
+        // Re-query using the extracted contact ID
+        const lastContactDetailsUrl = `${instance_url}/services/data/v58.0/sobjects/Contact/${contactId}`;
+        const lastContactResponse = await fetch(lastContactDetailsUrl, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        const lastContactDetails = await lastContactResponse.json();
+        accountId = lastContactDetails?.AccountId;
+
+        if (!accountId) {
+          throw new ApiError(400, "Failed to retrieve account ID from contact");
+        }
       }
-    } catch (err) {
-      console.log("No existing contact found, will create new contact");
+    } else if (contactData && contactData.Id) {
+      // If the response is a single object
+      contactId = contactData.Id;
+      accountId = contactData.AccountId;
+    } else if (contactData.errorCode === "NOT_FOUND") {
+      // If the response indicates that the contact was not found
+      console.log(
+        "No existing contact found, will create a new contact and account"
+      );
+    } else {
+      throw new ApiError(400, "Unexpected response from Salesforce");
     }
 
     // If no existing Contact, create new Account and Contact
@@ -174,7 +207,6 @@ const createAccessToken = asyncHandler(async (req, res) => {
     if (!opportunityId) throw new ApiError(400, "Failed to create opportunity");
 
     // For the image upload
-
     let fileUrl;
 
     if (req.file !== undefined) {
@@ -198,7 +230,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
         Customer_Received_Comments__c: notes,
         Imprint_Text__c: imprintText,
 
-        // quantitys
+        // quantities
         Bulldog_Clips__c: bullDogClipQuantity ? 1 : 0,
         Key_Rings__c: keyRingQuantity ? 1 : 0,
         Thumb_Triggers__c: thumbTriggerQuantity ? 1 : 0,
@@ -269,46 +301,34 @@ const createAccessToken = asyncHandler(async (req, res) => {
         image_preview__c: fileUrl,
       };
 
-      const { data: mainData } = await axios.post(
-        `${instance_url}/services/data/v58.0/sobjects/NEILON__File__c`,
+      const { data: mainImageData } = await axios.post(
+        `${instance_url}/services/data/v58.0/sobjects/Product_Image__c`,
         imageData,
         _headers
       );
-      return res
+
+      res
         .status(200)
         .json(
           new ApiResponse(
-            200,
-            { res: mainData, imgUrl: fileUrl },
-            "Opportunity data"
+            "success",
+            `Product ${productLineItemData?.id} created successfully`,
+            mainImageData
+          )
+        );
+    } else {
+      res
+        .status(200)
+        .json(
+          new ApiResponse(
+            "success",
+            `Product ${productLineItemData?.id} created successfully`
           )
         );
     }
-
-    return res
-      .status(200)
-      .json(
-        new ApiResponse(
-          200,
-          { res: productLineItemData, imgUrl: fileUrl },
-          "Opportunity data"
-        )
-      );
   } catch (error) {
-    console.log("Error start");
-    console.log(error);
-    return res
-      .status(400)
-      .json(
-        new ApiResponse(
-          400,
-          [],
-          error.response?.data[0].message ||
-            error.response?.data.error ||
-            error ||
-            "Try again in few minutes"
-        )
-      );
+    console.log(error.response?.data || error.message || error);
+    throw new ApiError(500, error.response?.data || error.message || error);
   }
 });
 
