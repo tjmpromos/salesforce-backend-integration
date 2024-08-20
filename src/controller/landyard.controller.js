@@ -102,13 +102,11 @@ const createAccessToken = asyncHandler(async (req, res) => {
       },
     });
     const contactData = await contactResponse.json();
-
     if (Array.isArray(contactData)) {
       // If the response is an array of contact URLs, use the last one
       if (contactData.length > 1) {
         const lastContactUrl = contactData[contactData.length - 1];
         contactId = lastContactUrl.split("/").pop();
-
         // Re-query using the extracted contact ID
         const lastContactDetailsUrl = `${instance_url}/services/data/v58.0/sobjects/Contact/${contactId}`;
         const lastContactResponse = await fetch(lastContactDetailsUrl, {
@@ -120,7 +118,6 @@ const createAccessToken = asyncHandler(async (req, res) => {
         });
         const lastContactDetails = await lastContactResponse.json();
         accountId = lastContactDetails?.AccountId;
-
         if (!accountId) {
           throw new ApiError(400, "Failed to retrieve account ID from contact");
         }
@@ -272,7 +269,6 @@ const createAccessToken = asyncHandler(async (req, res) => {
           sizeOriginal === "Custom" ? customBadgeHolder : null,
       };
     } else if (product_flag === "tagIdField") {
-      console.log("Inside tag id");
       incomingData = {
         Opportunity__c: opportunityId,
         Quantity__c: quantity < 150 ? 150 : quantity,
@@ -302,7 +298,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
       };
 
       const { data: mainImageData } = await axios.post(
-        `${instance_url}/services/data/v58.0/sobjects/Product_Image__c`,
+        `${instance_url}/services/data/v58.0/sobjects/NEILON__File__c`,
         imageData,
         _headers
       );
@@ -327,7 +323,7 @@ const createAccessToken = asyncHandler(async (req, res) => {
         );
     }
   } catch (error) {
-    console.log(error.response?.data || error.message || error);
+    console.log(error);
     throw new ApiError(500, error.response?.data || error.message || error);
   }
 });

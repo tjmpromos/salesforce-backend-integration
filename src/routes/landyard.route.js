@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { createAccessToken } from "../controller/landyard.controller.js";
 import { upload } from "../middleware/multer.middleware.js";
+import { createAccessToken } from "../controller/landyard.controller.js";
 const router = Router();
 router
   .route("/create-opportunity")
